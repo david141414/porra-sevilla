@@ -226,20 +226,10 @@
     </div>
 
     <div id="laliga" class="tab-content">
-        <div class="section-title">Clasificación Oficial La Liga (Puntos Totales)</div>
-        <div class="table-responsive">
-            <table style="max-width: 500px; margin: 0 auto;">
-                <thead>
-                    <tr>
-                        <th style="width: 60px;">POS</th>
-                        <th style="text-align: left;">EQUIPO</th>
-                        <th style="width: 100px; background-color: var(--primary-dark);">PUNTOS</th>
-                    </tr>
-                </thead>
-                <tbody id="ligaTableBody">
-                    <!-- Se carga automáticamente mediante JS -->
-                </tbody>
-            </table>
+        <div class="section-title">Clasificación Oficial La Liga EA Sports</div>
+        <div style="background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
+            <div id="sofa-standings-embed" data-widget-id="standings-laliga"></div>
+            <script type="text/javascript" src="https://widgets.sofascore.com/embed/unique-tournament/8/season/61628/standings.js" async></script>
         </div>
     </div>
 </div>
@@ -256,12 +246,6 @@ let matches = [];
 const teamAbbreviations = [
     "RAY", "ATH", "ATM", "ESP", "VAL", "DEP", "BAR", "LEV", "RMA", "OSA", 
     "GET", "ALA", "BET", "RSO", "MAL", "ELC", "RAC", "VIL", "CEL"
-];
-const opponents = [
-    "Rayo Vallecano", "Athletic Club", "Atlético de Madrid", "RCD Espanyol", "Valencia CF", 
-    "Deportivo de La Coruña", "FC Barcelona", "Levante UD", "Real Madrid", "Osasuna", 
-    "Getafe CF", "Alavés", "Real Betis", "Real Sociedad", "Málaga CF", 
-    "Elche CF", "Racing de Santander", "Villarreal CF", "Celta de Vigo"
 ];
 
 function inicializarPartidos() {
@@ -324,7 +308,6 @@ async function cargarDatosSupabasePublic() {
     renderStandingsPredsPublic();
     renderPredsPublic();
     renderAllStandings();
-    cargarClasificacionLaLiga();
 
     document.getElementById("lastUpdate").innerText = "Sincronizado: " + new Date().toLocaleTimeString();
 }
@@ -341,47 +324,7 @@ function switchTab(tabId) {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
     } else if(tabId === 'laliga') {
         document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        cargarClasificacionLaLiga();
     }
-}
-
-function cargarClasificacionLaLiga() {
-    const tbody = document.getElementById("ligaTableBody");
-    const ligaData = [
-        { name: "Real Madrid", pts: 6 },
-        { name: "Sevilla FC", pts: 6 },
-        { name: "Real Betis", pts: 6 },
-        { name: "Deportivo Alavés", pts: 4 },
-        { name: "Atlético de Madrid", pts: 4 },
-        { name: "FC Barcelona", pts: 3 },
-        { name: "RCD Espanyol", pts: 3 },
-        { name: "Getafe CF", pts: 3 },
-        { name: "Villarreal CF", pts: 2 },
-        { name: "Deportivo de La Coruña", pts: 2 },
-        { name: "Celta de Vigo", pts: 1 },
-        { name: "Osasuna", pts: 1 },
-        { name: "Racing de Santander", pts: 1 },
-        { name: "Rayo Vallecano", pts: 1 },
-        { name: "Valencia CF", pts: 1 },
-        { name: "Málaga CF", pts: 1 },
-        { name: "Levante UD", pts: 1 },
-        { name: "Elche CF", pts: 1 },
-        { name: "Athletic Club", pts: 0 },
-        { name: "Real Sociedad", pts: 0 }
-    ];
-
-    tbody.innerHTML = "";
-    ligaData.forEach((row, idx) => {
-        let tr = document.createElement("tr");
-        let isSevilla = row.name.includes("Sevilla");
-        let rowStyle = isSevilla ? 'background-color: #fdf3f3; font-weight: bold; color: var(--primary);' : '';
-        tr.innerHTML = `
-            <td style="${rowStyle}">${idx + 1}º</td>
-            <td style="text-align: left; ${rowStyle}">${row.name}</td>
-            <td style="font-weight: bold; ${rowStyle}">${row.pts} pts</td>
-        `;
-        tbody.appendChild(tr);
-    });
 }
 
 function calculateMatchPoints(predLoc, predVis, realLoc, realVis, sevIsLocal) {
@@ -460,7 +403,6 @@ function renderPredsPublic() {
     let sortedParticipants = [...participants].sort((a, b) => a.name.localeCompare(b.name));
 
     sortedParticipants.forEach(p => {
-        let originalIdx = participants.findIndex(item => item.name === p.name);
         let tr = document.createElement("tr");
         let tdName = document.createElement("td");
         tdName.className = "name-col";
@@ -545,7 +487,6 @@ function renderAllStandings() {
     let matchesV2Finished = matches.slice(19, 38).every(m => m.loc !== "" && m.vis !== "") && realStandings.v2 !== "";
     let totalFinished = matchesV1Finished && matchesV2Finished;
 
-    // Criterio de ordenación: 1º Puntos, 2º Más resultados exactos (6 pts), 3º Alfabético (A-Z)
     const sortRule = (a, b, scoreKey, exactKey) => {
         if (b[scoreKey] !== a[scoreKey]) {
             return b[scoreKey] - a[scoreKey];
