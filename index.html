@@ -33,32 +33,49 @@
             background-color: var(--primary);
             color: #ffffff;
             padding: 15px 20px;
-            text-align: center;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             gap: 15px;
             flex-wrap: wrap;
         }
-        header img {
-            height: 65px; 
-            width: 65px;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        header img.logo-pena {
+            height: 60px; 
+            width: 60px;
             object-fit: contain;
             border-radius: 50%;
         }
-        header h1 { margin: 0 0 5px 0; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
-        header p { margin: 0; font-size: 13px; opacity: 0.9; width: 100%; }
+        .header-titles {
+            text-align: left;
+        }
+        header h1 { margin: 0 0 3px 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        header p { margin: 0; font-size: 12px; opacity: 0.9; }
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        .escudo-link img {
+            height: 45px;
+            width: 45px;
+            object-fit: contain;
+            transition: transform 0.2s, opacity 0.2s;
+            cursor: pointer;
+        }
+        .escudo-link img:hover {
+            transform: scale(1.1);
+            opacity: 0.9;
+        }
         .info-bar {
             background: #fff8f8;
-            padding: 12px 20px;
+            padding: 8px 20px;
             border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
+            font-size: 12px;
             color: #555;
-            flex-wrap: wrap;
-            gap: 10px;
         }
         .tabs {
             display: flex;
@@ -111,22 +128,27 @@
 
 <div class="container">
     <header>
-        <img src="logo Peña dgn.png" alt="Logo Peña">
-        <div>
-            <h1>PORRA (26-27)</h1>
-            <p>Panel de Consulta Pública</p>
+        <div class="header-left">
+            <img src="logo Peña dgn.png" alt="Logo Peña" class="logo-pena">
+            <div class="header-titles">
+                <h1>PORRA (26-27)</h1>
+                <p>Panel de Consulta Pública</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="https://sevillafc.es/equipos/primerequipo/clasificacion" target="_blank" class="escudo-link" title="Ver Clasificación Oficial Sevilla FC">
+                <img src="escudo-sevilla.png" alt="Escudo Sevilla">
+            </a>
         </div>
     </header>
 
     <div class="info-bar">
-        <span>👁️ <strong>Modo Consulta:</strong> Sincronizado en tiempo real</span>
-        <span id="lastUpdate" style="font-size: 11px; color: #777;">Cargando...</span>
+        <span id="lastUpdate" style="font-size: 11px; color: #777;">Sincronizado</span>
     </div>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('clasificacion')">🏆 Clasificación</button>
         <button class="tab-btn" onclick="switchTab('pronosticos')">📝 Pronósticos</button>
-        <button class="tab-btn" onclick="switchTab('laliga')">⚽ Clasificación La Liga</button>
     </div>
 
     <div id="clasificacion" class="tab-content active">
@@ -185,9 +207,9 @@
         <div class="rules-card">
             <strong>Sistema de Puntuación:</strong>
             <ul>
-                <li><strong>Pleno (Resultado exacto):</strong> 6 puntos</li>
-                <li><strong>Goles del Sevilla y Signo (1X2):</strong> 4 puntos</li>
-                <li><strong>Solo Signo O solo Goles del Sevilla:</strong> 2 puntos</li>
+                <li><strong>Pleno (Resultado exacto):</strong> 6 points</li>
+                <li><strong>Goles del Sevilla y Signo (1X2):</strong> 4 points</li>
+                <li><strong>Solo Signo O solo Goles del Sevilla:</strong> 2 points</li>
                 <li><strong>Acierto posición exacta 1ª / 2ª Vuelta:</strong> 10 puntos extra por vuelta</li>
             </ul>
         </div>
@@ -222,14 +244,6 @@
                 </thead>
                 <tbody id="standingsPredsBody"></tbody>
             </table>
-        </div>
-    </div>
-
-    <div id="laliga" class="tab-content">
-        <div class="section-title">Clasificación Oficial La Liga EA Sports</div>
-        <div style="background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
-            <div id="sofa-standings-embed" data-widget-id="standings-laliga"></div>
-            <script type="text/javascript" src="https://widgets.sofascore.com/embed/unique-tournament/8/season/61628/standings.js" async></script>
         </div>
     </div>
 </div>
@@ -322,8 +336,6 @@ function switchTab(tabId) {
         renderAllStandings();
     } else if(tabId === 'pronosticos') {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
-    } else if(tabId === 'laliga') {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
     }
 }
 

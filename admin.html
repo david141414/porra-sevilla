@@ -33,24 +33,46 @@
             background-color: var(--primary);
             color: #ffffff;
             padding: 15px 20px;
-            text-align: center;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             gap: 15px;
             flex-wrap: wrap;
         }
-        header img {
-            height: 65px; 
-            width: 65px;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        header img.logo-pena {
+            height: 60px; 
+            width: 60px;
             object-fit: contain;
             border-radius: 50%;
         }
-        header h1 { margin: 0 0 5px 0; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
-        header p { margin: 0; font-size: 13px; opacity: 0.9; width: 100%; }
+        .header-titles {
+            text-align: left;
+        }
+        header h1 { margin: 0 0 3px 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        header p { margin: 0; font-size: 12px; opacity: 0.9; }
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        .escudo-link img {
+            height: 45px;
+            width: 45px;
+            object-fit: contain;
+            transition: transform 0.2s, opacity 0.2s;
+            cursor: pointer;
+        }
+        .escudo-link img:hover {
+            transform: scale(1.1);
+            opacity: 0.9;
+        }
         .top-action-bar {
             background: #fff8f8;
-            padding: 12px 20px;
+            padding: 10px 20px;
             border-bottom: 1px solid #ddd;
             display: flex;
             justify-content: space-between;
@@ -59,8 +81,6 @@
             top: 0;
             z-index: 10;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            flex-wrap: wrap;
-            gap: 10px;
         }
         .tabs {
             display: flex;
@@ -107,22 +127,27 @@
 
 <div class="container">
     <header>
-        <img src="logo Peña dgn.png" alt="Logo Peña">
-        <div>
-            <h1>PORRA (26-27)</h1>
-            <p>Panel de Administración en la Nube (Supabase)</p>
+        <div class="header-left">
+            <img src="logo Peña dgn.png" alt="Logo Peña" class="logo-pena">
+            <div class="header-titles">
+                <h1>PORRA (26-27)</h1>
+                <p>Panel de Administración en la Nube (Supabase)</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="https://sevillafc.es/equipos/primerequipo/clasificacion" target="_blank" class="escudo-link" title="Ver Clasificación Oficial Sevilla FC">
+                <img src="escudo-sevilla.png" alt="Escudo Sevilla">
+            </a>
         </div>
     </header>
 
     <div class="top-action-bar">
-        <span style="font-size: 13px; font-weight: bold; color: #333;">⚡ Panel de Control:</span>
         <button class="main-btn" onclick="saveToSupabase()">💾 Guardar y Sincronizar en la Nube</button>
     </div>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('clasificacion')">🏆 Clasificación</button>
         <button class="tab-btn" onclick="switchTab('pronosticos')">📝 Pronósticos</button>
-        <button class="tab-btn" onclick="switchTab('laliga')">⚽ Clasificación La Liga</button>
     </div>
 
     <div id="clasificacion" class="tab-content active">
@@ -181,9 +206,9 @@
         <div class="rules-card">
             <strong>Sistema de Puntuación:</strong>
             <ul>
-                <li><strong>Pleno (Resultado exacto):</strong> 6 puntos</li>
-                <li><strong>Goles del Sevilla y Signo (1X2):</strong> 4 puntos</li>
-                <li><strong>Solo Signo O solo Goles del Sevilla:</strong> 2 puntos</li>
+                <li><strong>Pleno (Resultado exacto):</strong> 6 points</li>
+                <li><strong>Goles del Sevilla y Signo (1X2):</strong> 4 points</li>
+                <li><strong>Solo Signo O solo Goles del Sevilla:</strong> 2 points</li>
                 <li><strong>Acierto posición exacta 1ª / 2ª Vuelta:</strong> 10 puntos extra por vuelta</li>
             </ul>
         </div>
@@ -226,24 +251,6 @@
             </table>
         </div>
     </div>
-
-    <div id="laliga" class="tab-content">
-        <div class="section-title">Clasificación Oficial La Liga (Puntos Totales)</div>
-        <div class="table-responsive">
-            <table style="max-width: 500px; margin: 0 auto;">
-                <thead>
-                    <tr>
-                        <th style="width: 60px;">POS</th>
-                        <th style="text-align: left;">EQUIPO</th>
-                        <th style="width: 100px; background-color: var(--primary-dark);">PUNTOS</th>
-                    </tr>
-                </thead>
-                <tbody id="ligaTableBody">
-                    <!-- Se carga automáticamente mediante JS -->
-                </tbody>
-            </table>
-        </div>
-    </div>
 </div>
 
 <script>
@@ -258,12 +265,6 @@ let matches = [];
 const teamAbbreviations = [
     "RAY", "ATH", "ATM", "ESP", "VAL", "DEP", "BAR", "LEV", "RMA", "OSA", 
     "GET", "ALA", "BET", "RSO", "MAL", "ELC", "RAC", "VIL", "CEL"
-];
-const opponents = [
-    "Rayo Vallecano", "Athletic Club", "Atlético de Madrid", "RCD Espanyol", "Valencia CF", 
-    "Deportivo de La Coruña", "FC Barcelona", "Levante UD", "Real Madrid", "Osasuna", 
-    "Getafe CF", "Alavés", "Real Betis", "Real Sociedad", "Málaga CF", 
-    "Elche CF", "Racing de Santander", "Villarreal CF", "Celta de Vigo"
 ];
 
 function inicializarPartidos() {
@@ -329,7 +330,6 @@ async function cargarDatosSupabase() {
     renderStandingsPreds();
     renderPreds();
     renderAllStandings();
-    cargarClasificacionLaLiga();
 }
 
 function switchTab(tabId) {
@@ -342,49 +342,7 @@ function switchTab(tabId) {
         renderAllStandings();
     } else if(tabId === 'pronosticos') {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
-    } else if(tabId === 'laliga') {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        cargarClasificacionLaLiga();
     }
-}
-
-function cargarClasificacionLaLiga() {
-    const tbody = document.getElementById("ligaTableBody");
-    const ligaData = [
-        { name: "Real Madrid", pts: 6 },
-        { name: "Sevilla FC", pts: 6 },
-        { name: "Real Betis", pts: 6 },
-        { name: "Deportivo Alavés", pts: 4 },
-        { name: "Atlético de Madrid", pts: 4 },
-        { name: "FC Barcelona", pts: 3 },
-        { name: "RCD Espanyol", pts: 3 },
-        { name: "Getafe CF", pts: 3 },
-        { name: "Villarreal CF", pts: 2 },
-        { name: "Deportivo de La Coruña", pts: 2 },
-        { name: "Celta de Vigo", pts: 1 },
-        { name: "Osasuna", pts: 1 },
-        { name: "Racing de Santander", pts: 1 },
-        { name: "Rayo Vallecano", pts: 1 },
-        { name: "Valencia CF", pts: 1 },
-        { name: "Málaga CF", pts: 1 },
-        { name: "Levante UD", pts: 1 },
-        { name: "Elche CF", pts: 1 },
-        { name: "Athletic Club", pts: 0 },
-        { name: "Real Sociedad", pts: 0 }
-    ];
-
-    tbody.innerHTML = "";
-    ligaData.forEach((row, idx) => {
-        let tr = document.createElement("tr");
-        let isSevilla = row.name.includes("Sevilla");
-        let rowStyle = isSevilla ? 'background-color: #fdf3f3; font-weight: bold; color: var(--primary);' : '';
-        tr.innerHTML = `
-            <td style="${rowStyle}">${idx + 1}º</td>
-            <td style="text-align: left; ${rowStyle}">${row.name}</td>
-            <td style="font-weight: bold; ${rowStyle}">${row.pts} pts</td>
-        `;
-        tbody.appendChild(tr);
-    });
 }
 
 function calculateMatchPoints(predLoc, predVis, realLoc, realVis, sevIsLocal) {
@@ -596,7 +554,6 @@ function getEvaluatedData() {
 }
 
 function renderAllStandings() {
-    if (participants.length === 0) return;
     let data = getEvaluatedData();
     let matchesV1Finished = matches.slice(0, 19).every(m => m.loc !== "" && m.vis !== "") && realStandings.v1 !== "";
     let matchesV2Finished = matches.slice(19, 38).every(m => m.loc !== "" && m.vis !== "") && realStandings.v2 !== "";
@@ -638,7 +595,7 @@ function renderAllStandings() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    cargarDatosSupabasePublic();
+    cargarDatosSupabase();
 });
 </script>
 
