@@ -123,6 +123,7 @@
         tr:nth-child(even) { background-color: #fafafa; }
         .name-col { text-align: left; font-weight: bold; background-color: #f4f4f4; position: sticky; left: 0; z-index: 2; }
         th.name-col { z-index: 3; }
+        .real-sticky-col { text-align: left; font-weight: bold; background-color: #ffe6e6 !important; color: var(--primary); position: sticky; left: 0; z-index: 2; }
         input[type="number"] { width: 35px; text-align: center; padding: 3px; border: 1px solid #ccc; border-radius: 3px; }
         button.main-btn { background-color: var(--primary); color: white; border: none; padding: 9px 14px; font-size: 13px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button.main-btn:hover { background-color: var(--primary-dark); }
@@ -216,8 +217,8 @@
             <ul>
                 <li><strong>Pleno (Resultado exacto):</strong> 6 p</li>
                 <li><strong>Goles del Sevilla y Signo (1X2):</strong> 4 p</li>
-                <li><strong>Solo Signo O solo Goles del Sevilla:</strong> 2 p</li>
-                <li><strong>Acierto posición exacta 1ª / 2ª Vuelta:</strong> 10 puntos extra por vuelta</li>
+                <li><strong>Solo Goles del Sevilla, o sólo Signo (1X2):</strong> 2 p</li>
+                <li><strong>Acierto posición exacta 1ª o 2ª Vuelta:</strong> 10 p</li>
             </ul>
         </div>
 
@@ -234,7 +235,9 @@
                     <tr id="predsHeaderRow">
                         <th class="name-col" rowspan="2">PARTICIPANTE</th>
                     </tr>
-                    <tr id="predsRealRow"></tr>
+                    <tr id="predsRealRow">
+                        <td class="real-sticky-col">RESULTADO REAL</td>
+                    </tr>
                 </thead>
                 <tbody id="predsBody"></tbody>
             </table>
@@ -246,8 +249,8 @@
                 <thead>
                     <tr>
                         <th class="name-col">PARTICIPANTE</th>
-                        <th>Pronóstico posición</th>
-                        <th>Pronóstico posición</th>
+                        <th>Primera vuelta</th>
+                        <th>Segunda vuelta</th>
                     </tr>
                     <tr style="background-color: #ffe6e6;">
                         <td style="font-weight: bold; text-align: left;">RESULTADO REAL</td>
@@ -395,7 +398,7 @@ function renderPreds() {
     const realRow = document.getElementById("predsRealRow");
     
     while (headerRow.children.length > 1) headerRow.removeChild(headerRow.lastChild);
-    realRow.innerHTML = "";
+    while (realRow.children.length > 1) realRow.removeChild(realRow.lastChild);
 
     matches.forEach((m, idx) => {
         let th = document.createElement("th");
