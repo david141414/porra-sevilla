@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PORRA (26-27) - Admin</title>
+    <!-- Cargamos la librería oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #8B0000;
+            --primary-dark: #600000;
+            --bg-light: #fdf3f3;
+            --text-dark: #222222;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 10px;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 15px 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        header img {
+            height: 65px; 
+            width: 65px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+        header h1 { margin: 0 0 5px 0; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        header p { margin: 0; font-size: 13px; opacity: 0.9; width: 100%; }
+        .top-action-bar {
+            background: #fff8f8;
+            padding: 12px 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tabs {
+            display: flex;
+            background: #e9ecef;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: #e9ecef;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+            color: #555;
+            white-space: nowrap;
+        }
+        .tab-btn.active { background: #ffffff; color: var(--primary); border-bottom: 3px solid var(--primary); }
+        .tab-content { display: none; padding: 15px; }
+        .tab-content.active { display: block; }
+        .rules-card { background: #fff8f8; border-left: 4px solid var(--primary); padding: 12px 16px; margin-bottom: 15px; font-size: 13px; border-radius: 4px; }
+        .rules-card ul { margin: 5px 0 0 20px; padding: 0; }
+        .section-title { font-size: 16px; color: var(--primary); margin: 20px 0 10px 0; font-weight: bold; border-bottom: 2px solid var(--primary); padding-bottom: 4px; }
+        .add-participant-box { background: #f1f3f5; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .add-participant-box input[type="text"] { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; text-transform: uppercase; }
+        .table-responsive { width: 100%; overflow-x: auto; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+        th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: center; }
+        th { background-color: var(--primary); color: white; font-weight: bold; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        .name-col { text-align: left; font-weight: bold; background-color: #f4f4f4; position: sticky; left: 0; z-index: 2; }
+        th.name-col { z-index: 3; }
+        input[type="number"] { width: 35px; text-align: center; padding: 3px; border: 1px solid #ccc; border-radius: 3px; }
+        button.main-btn { background-color: var(--primary); color: white; border: none; padding: 9px 14px; font-size: 13px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button.main-btn:hover { background-color: var(--primary-dark); }
+        .total-col { font-weight: bold; color: var(--primary); background-color: #fdf3f3; }
+        .winner-badge { background: #ffc107; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 5px; }
+        .real-score-input { background-color: #ffe6e6; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <img src="logo Peña dgn.png" alt="Logo Peña">
+        <div>
+            <h1>PORRA (26-27)</h1>
+            <p>Panel de Administración en la Nube (Supabase)</p>
+        </div>
+    </header>
+
+    <div class="top-action-bar">
+        <span style="font-size: 13px; font-weight: bold; color: #333;">⚡ Panel de Control:</span>
+        <button class="main-btn" onclick="saveToSupabase()">💾 Guardar y Sincronizar en la Nube</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('clasificacion')">🏆 Clasificación</button>
+        <button class="tab-btn" onclick="switchTab('pronosticos')">📝 Pronósticos</button>
+        <button class="tab-btn" onclick="switchTab('laliga')">⚽ Clasificación La Liga</button>
+    </div>
+
+    <div id="clasificacion" class="tab-content active">
+        <div class="section-title">1. Clasificación 1ª Vuelta</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>POS</th>
+                        <th style="text-align: left;">PARTICIPANTE</th>
+                        <th>Ptos Partidos</th>
+                        <th>Pronóstico posición</th>
+                        <th>Ptos Posición</th>
+                        <th class="total-col">TOTAL 1ª VUELTA</th>
+                    </tr>
+                </thead>
+                <tbody id="clasifV1Body"></tbody>
+            </table>
+        </div>
+
+        <div class="section-title">2. Clasificación 2ª Vuelta</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>POS</th>
+                        <th style="text-align: left;">PARTICIPANTE</th>
+                        <th>Ptos Partidos</th>
+                        <th>Pronóstico posición</th>
+                        <th>Ptos Posición</th>
+                        <th class="total-col">TOTAL 2ª VUELTA</th>
+                    </tr>
+                </thead>
+                <tbody id="clasifV2Body"></tbody>
+            </table>
+        </div>
+
+        <div class="section-title">3. Clasificación General Total</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>POS</th>
+                        <th style="text-align: left;">PARTICIPANTE</th>
+                        <th>Total 1ª Vta</th>
+                        <th>Total 2ª Vta</th>
+                        <th class="total-col">TOTAL ACUMULADO</th>
+                    </tr>
+                </thead>
+                <tbody id="clasifTotalBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="pronosticos" class="tab-content">
+        <div class="rules-card">
+            <strong>Sistema de Puntuación:</strong>
+            <ul>
+                <li><strong>Pleno (Resultado exacto):</strong> 6 puntos</li>
+                <li><strong>Goles del Sevilla y Signo (1X2):</strong> 4 puntos</li>
+                <li><strong>Solo Signo O solo Goles del Sevilla:</strong> 2 puntos</li>
+                <li><strong>Acierto posición exacta 1ª / 2ª Vuelta:</strong> 10 puntos extra por vuelta</li>
+            </ul>
+        </div>
+
+        <div class="section-title">Añadir Nuevo Participante</div>
+        <div class="add-participant-box">
+            <input type="text" id="newParticipantName" placeholder="NOMBRE PARTICIPANTE">
+            <button class="main-btn" onclick="addNewParticipant()">➕ Añadir Participante</button>
+        </div>
+
+        <div class="section-title">Pronósticos y Resultados</div>
+        <div class="table-responsive">
+            <table id="tablePreds">
+                <thead>
+                    <tr id="predsHeaderRow">
+                        <th class="name-col" rowspan="2">PARTICIPANTE</th>
+                    </tr>
+                    <tr id="predsRealRow"></tr>
+                </thead>
+                <tbody id="predsBody"></tbody>
+            </table>
+        </div>
+
+        <div class="section-title">Pronósticos de Posición en Clasificación</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="name-col">PARTICIPANTE</th>
+                        <th>Pronóstico posición</th>
+                        <th>Pronóstico posición</th>
+                    </tr>
+                    <tr style="background-color: #ffe6e6;">
+                        <td style="font-weight: bold; text-align: left;">RESULTADO REAL</td>
+                        <td><input type="number" id="real_pos_v1" value="" min="1" max="20" style="width: 50px;"></td>
+                        <td><input type="number" id="real_pos_v2" value="" min="1" max="20" style="width: 50px;"></td>
+                    </tr>
+                </thead>
+                <tbody id="standingsPredsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="laliga" class="tab-content">
+        <div class="section-title">Clasificación Oficial La Liga (Puntos Totales)</div>
+        <div class="table-responsive">
+            <table style="max-width: 500px; margin: 0 auto;">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">POS</th>
+                        <th style="text-align: left;">EQUIPO</th>
+                        <th style="width: 100px; background-color: var(--primary-dark);">PUNTOS</th>
+                    </tr>
+                </thead>
+                <tbody id="ligaTableBody">
+                    <!-- Se carga automáticamente mediante JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ihclmujluncxhamwitke.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ZXIHIzVBFmjgdwxS-6zOaA_djTCpQh6';
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let participants = [];
+let realStandings = { v1: "", v2: "" };
+let matches = [];
+const teamAbbreviations = [
+    "RAY", "ATH", "ATM", "ESP", "VAL", "DEP", "BAR", "LEV", "RMA", "OSA", 
+    "GET", "ALA", "BET", "RSO", "MAL", "ELC", "RAC", "VIL", "CEL"
+];
+const opponents = [
+    "Rayo Vallecano", "Athletic Club", "Atlético de Madrid", "RCD Espanyol", "Valencia CF", 
+    "Deportivo de La Coruña", "FC Barcelona", "Levante UD", "Real Madrid", "Osasuna", 
+    "Getafe CF", "Alavés", "Real Betis", "Real Sociedad", "Málaga CF", 
+    "Elche CF", "Racing de Santander", "Villarreal CF", "Celta de Vigo"
+];
+
+function inicializarPartidos() {
+    matches = [];
+    for (let i = 1; i <= 38; i++) {
+        let oppIdx = (i - 1) % 19;
+        let isHome = (i % 2 !== 0);
+        let oppAbbr = teamAbbreviations[oppIdx];
+        let local = isHome ? "SEV" : oppAbbr;
+        let visitor = isHome ? oppAbbr : "SEV";
+        let matchName = `J${i}: ${local} vs ${visitor}`;
+        matches.push({
+            id: `j${i}`,
+            name: matchName,
+            sevIsLocal: isHome,
+            loc: "",
+            vis: "",
+            half: i <= 19 ? 1 : 2,
+            localAbbr: local,
+            visAbbr: visitor
+        });
+    }
+}
+
+async function cargarDatosSupabase() {
+    inicializarPartidos();
+    try {
+        let { data, error } = await supabaseClient
+            .from('estado_porra')
+            .select('json_data')
+            .limit(1)
+            .single();
+
+        if (error) throw error;
+
+        if (data && data.json_data) {
+            let parsed = typeof data.json_data === 'string' ? JSON.parse(data.json_data) : data.json_data;
+            if (parsed && parsed.participants) {
+                participants = parsed.participants;
+                realStandings = parsed.realStandings || { v1: "", v2: "" };
+                if (parsed.matches && parsed.matches.length > 0) {
+                    matches = parsed.matches;
+                    matches.forEach((m, idx) => {
+                        let oppIdx = idx % 19;
+                        let isHome = ((idx + 1) % 2 !== 0);
+                        let oppAbbr = teamAbbreviations[oppIdx];
+                        m.localAbbr = m.localAbbr || (isHome ? "SEV" : oppAbbr);
+                        m.visAbbr = m.visAbbr || (isHome ? oppAbbr : "SEV");
+                    });
+                }
+            }
+        }
+    } catch (err) {
+        console.log("Iniciando con datos por defecto...");
+        participants = [
+            { name: "JULIAN", v1: 16, v2: "", preds: { j1: [2, 1] } },
+            { name: "MIGUEL", v1: 11, v2: "", preds: { j1: [2, 1] } }
+        ];
+    }
+
+    document.getElementById("real_pos_v1").value = realStandings.v1;
+    document.getElementById("real_pos_v2").value = realStandings.v2;
+    renderStandingsPreds();
+    renderPreds();
+    renderAllStandings();
+    cargarClasificacionLaLiga();
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    
+    if(tabId === 'clasificacion') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        renderAllStandings();
+    } else if(tabId === 'pronosticos') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+    } else if(tabId === 'laliga') {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        cargarClasificacionLaLiga();
+    }
+}
+
+function cargarClasificacionLaLiga() {
+    const tbody = document.getElementById("ligaTableBody");
+    // Clasificación real actualizada y ordenada por puntos (conforme a los resultados oficiales actuales)
+    const ligaData = [
+        { name: "Real Madrid", pts: 6 },
+        { name: "Sevilla FC", pts: 6 },
+        { name: "Real Betis", pts: 6 },
+        { name: "Deportivo Alavés", pts: 4 },
+        { name: "Atlético de Madrid", pts: 4 },
+        { name: "FC Barcelona", pts: 3 },
+        { name: "RCD Espanyol", pts: 3 },
+        { name: "Getafe CF", pts: 3 },
+        { name: "Villarreal CF", pts: 2 },
+        { name: "Deportivo de La Coruña", pts: 2 },
+        { name: "Celta de Vigo", pts: 1 },
+        { name: "Osasuna", pts: 1 },
+        { name: "Racing de Santander", pts: 1 },
+        { name: "Rayo Vallecano", pts: 1 },
+        { name: "Valencia CF", pts: 1 },
+        { name: "Málaga CF", pts: 1 },
+        { name: "Levante UD", pts: 1 },
+        { name: "Elche CF", pts: 1 },
+        { name: "Athletic Club", pts: 0 },
+        { name: "Real Sociedad", pts: 0 }
+    ];
+
+    tbody.innerHTML = "";
+    ligaData.forEach((row, idx) => {
+        let tr = document.createElement("tr");
+        let isSevilla = row.name.includes("Sevilla");
+        let rowStyle = isSevilla ? 'background-color: #fdf3f3; font-weight: bold; color: var(--primary);' : '';
+        tr.innerHTML = `
+            <td style="${rowStyle}">${idx + 1}º</td>
+            <td style="text-align: left; ${rowStyle}">${row.name}</td>
+            <td style="font-weight: bold; ${rowStyle}">${row.pts} pts</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function calculateMatchPoints(predLoc, predVis, realLoc, realVis, sevIsLocal) {
+    if (predLoc === "" || predVis === "" || realLoc === "" || realVis === "" || isNaN(predLoc) || isNaN(predVis) || isNaN(realLoc) || isNaN(realVis)) return 0;
+    let pL = parseInt(predLoc), pV = parseInt(predVis);
+    let rL = parseInt(realLoc), rV = parseInt(realVis);
+    
+    if (pL === rL && pV === rV) return 6;
+    
+    let pSign = pL > pV ? "1" : (pL < pV ? "2" : "X");
+    let rSign = rL > rV ? "1" : (rL < rV ? "2" : "X");
+    
+    let pSevilla = sevIsLocal ? pL : pV;
+    let rSevilla = sevIsLocal ? rL : rV;
+    
+    let signMatch = (pSign === rSign);
+    let sevGoalsMatch = (pSevilla === rSevilla);
+    
+    if (signMatch && sevGoalsMatch) return 4;
+    if (signMatch || sevGoalsMatch) return 2;
+    return 0;
+}
+
+function renderStandingsPreds() {
+    const tbody = document.getElementById("standingsPredsBody");
+    tbody.innerHTML = "";
+    participants.forEach((p, idx) => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="name-col">${p.name}</td>
+            <td><input type="number" id="standings_v1_${idx}" value="${p.v1}" min="1" max="20" style="width:70px;"></td>
+            <td><input type="number" id="standings_v2_${idx}" value="${p.v2}" min="1" max="20" style="width:70px;"></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderPreds() {
+    const headerRow = document.getElementById("predsHeaderRow");
+    const realRow = document.getElementById("predsRealRow");
+    
+    while (headerRow.children.length > 1) headerRow.removeChild(headerRow.lastChild);
+    realRow.innerHTML = "";
+
+    matches.forEach((m, idx) => {
+        let th = document.createElement("th");
+        let jNum = idx + 1;
+        let lAbbr = m.localAbbr || "SEV";
+        let vAbbr = m.visAbbr || "RIV";
+        th.innerHTML = `J${jNum}<br><small style="font-size:9px;">${lAbbr}-${vAbbr}</small>`;
+        headerRow.appendChild(th);
+
+        let tdReal = document.createElement("td");
+        tdReal.className = "real-score-input";
+        tdReal.innerHTML = `
+            <input type="number" id="real_loc_${m.id}" value="${m.loc}" min="0">
+            <input type="number" id="real_vis_${m.id}" value="${m.vis}" min="0">
+        `;
+        realRow.appendChild(tdReal);
+    });
+
+    const tbody = document.getElementById("predsBody");
+    tbody.innerHTML = "";
+
+    participants.forEach((p, idx) => {
+        let tr = document.createElement("tr");
+        let tdName = document.createElement("td");
+        tdName.className = "name-col";
+        tdName.innerText = p.name;
+        tr.appendChild(tdName);
+
+        matches.forEach(m => {
+            let td = document.createElement("td");
+            if (!p.preds[m.id]) p.preds[m.id] = ["", ""];
+            td.innerHTML = `
+                <input type="number" id="p_${idx}_${m.id}_l" value="${p.preds[m.id][0]}" min="0">
+                <input type="number" id="p_${idx}_${m.id}_v" value="${p.preds[m.id][1]}" min="0">
+            `;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+}
+
+function addNewParticipant() {
+    let nameInput = document.getElementById("newParticipantName");
+    let name = nameInput.value.trim().toUpperCase();
+    
+    if (!name) {
+        alert("Por favor, introduce un nombre.");
+        return;
+    }
+    
+    let exists = participants.some(p => p.name === name);
+    if (exists) {
+        alert("Ese participante ya existe.");
+        return;
+    }
+    
+    let newPart = { name: name, v1: "", v2: "", preds: {} };
+    matches.forEach(m => { newPart.preds[m.id] = ["", ""]; });
+    
+    participants.push(newPart);
+    nameInput.value = "";
+    
+    renderStandingsPreds();
+    renderPreds();
+    renderAllStandings();
+    alert(`¡Participante ${name} añadido! Recuerda pulsar "Guardar y Sincronizar".`);
+}
+
+async function saveToSupabase() {
+    let rv1 = document.getElementById("real_pos_v1").value;
+    let rv2 = document.getElementById("real_pos_v2").value;
+    realStandings.v1 = rv1 !== "" ? parseInt(rv1) : "";
+    realStandings.v2 = rv2 !== "" ? parseInt(rv2) : "";
+
+    matches.forEach(m => {
+        let l = document.getElementById(`real_loc_${m.id}`).value;
+        let v = document.getElementById(`real_vis_${m.id}`).value;
+        m.loc = l !== "" ? parseInt(l) : "";
+        m.vis = v !== "" ? parseInt(v) : "";
+    });
+
+    participants.forEach((p, idx) => {
+        let v1 = document.getElementById(`standings_v1_${idx}`).value;
+        let v2 = document.getElementById(`standings_v2_${idx}`).value;
+        p.v1 = v1 !== "" ? parseInt(v1) : "";
+        p.v2 = v2 !== "" ? parseInt(v2) : "";
+    });
+
+    participants.forEach((p, idx) => {
+        matches.forEach(m => {
+            let l = document.getElementById(`p_${idx}_${m.id}_l`).value;
+            let v = document.getElementById(`p_${idx}_${m.id}_v`).value;
+            p.preds[m.id] = [l !== "" ? parseInt(l) : "", v !== "" ? parseInt(v) : ""];
+        });
+    });
+
+    const datosPorra = {
+        realStandings: realStandings,
+        participants: participants,
+        matches: matches
+    };
+
+    try {
+        let { error } = await supabaseClient
+            .from('estado_porra')
+            .upsert({ id: 1, json_data: datosPorra }, { onConflict: 'id' });
+
+        if (error) throw error;
+
+        alert("¡Guardado y sincronizado en la nube con éxito!");
+        switchTab('clasificacion');
+    } catch (err) {
+        console.error("Error al guardar:", err);
+        alert("⚠️ Error al sincronizar con Supabase: " + err.message);
+    }
+}
+
+function getEvaluatedData() {
+    return participants.map(p => {
+        let ptsV1 = 0, ptsV2 = 0;
+        matches.forEach(m => {
+            let userPred = p.preds[m.id];
+            if (userPred) {
+                let matchPts = calculateMatchPoints(userPred[0], userPred[1], m.loc, m.vis, m.sevIsLocal);
+                if (m.half === 1) ptsV1 += matchPts;
+                else ptsV2 += matchPts;
+            }
+        });
+
+        let posV1Pts = (realStandings.v1 !== "" && p.v1 === realStandings.v1) ? 10 : 0;
+        let posV2Pts = (realStandings.v2 !== "" && p.v2 === realStandings.v2) ? 10 : 0;
+
+        let totalV1 = ptsV1 + posV1Pts;
+        let totalV2 = ptsV2 + posV2Pts;
+        let totalGeneral = totalV1 + totalV2;
+
+        return { name: p.name, v1: p.v1, v2: p.v2, ptsV1, posV1Pts, totalV1, ptsV2, posV2Pts, totalV2, totalGeneral };
+    });
+}
+
+function renderAllStandings() {
+    let data = getEvaluatedData();
+    let matchesV1Finished = matches.slice(0, 19).every(m => m.loc !== "" && m.vis !== "") && realStandings.v1 !== "";
+    let matchesV2Finished = matches.slice(19, 38).every(m => m.loc !== "" && m.vis !== "") && realStandings.v2 !== "";
+    let totalFinished = matchesV1Finished && matchesV2Finished;
+
+    let sortedV1 = [...data].sort((a, b) => b.totalV1 - a.totalV1);
+    const tbodyV1 = document.getElementById("clasifV1Body");
+    tbodyV1.innerHTML = "";
+    sortedV1.forEach((p, idx) => {
+        let badge = (idx === 0 && matchesV1Finished && p.totalV1 > 0) ? `<span class="winner-badge">🏆 Ganador 1ª Vuelta</span>` : "";
+        tbodyV1.innerHTML += `<tr><td><strong>${idx+1}º</strong></td><td style="text-align:left; font-weight:bold;">${p.name} ${badge}</td><td>${p.ptsV1}</td><td>${p.v1 !== "" ? p.v1 + "º" : "-"}</td><td>${p.posV1Pts}</td><td class="total-col">${p.totalV1}</td></tr>`;
+    });
+
+    let sortedV2 = [...data].sort((a, b) => b.totalV2 - a.totalV2);
+    const tbodyV2 = document.getElementById("clasifV2Body");
+    tbodyV2.innerHTML = "";
+    sortedV2.forEach((p, idx) => {
+        let badge = (idx === 0 && matchesV2Finished && p.totalV2 > 0) ? `<span class="winner-badge">🏆 Ganador 2ª Vuelta</span>` : "";
+        tbodyV2.innerHTML += `<tr><td><strong>${idx+1}º</strong></td><td style="text-align:left; font-weight:bold;">${p.name} ${badge}</td><td>${p.ptsV2}</td><td>${p.v2 !== "" ? p.v2 + "º" : "-"}</td><td>${p.posV2Pts}</td><td class="total-col">${p.totalV2}</td></tr>`;
+    });
+
+    let sortedTotal = [...data].sort((a, b) => b.totalGeneral - a.totalGeneral);
+    const tbodyTotal = document.getElementById("clasifTotalBody");
+    tbodyTotal.innerHTML = "";
+    sortedTotal.forEach((p, idx) => {
+        let badge = (idx === 0 && totalFinished && p.totalGeneral > 0) ? `<span class="winner-badge">👑 Campeón General</span>` : "";
+        tbodyTotal.innerHTML += `<tr><td><strong>${idx+1}º</strong></td><td style="text-align:left; font-weight:bold;">${p.name} ${badge}</td><td>${p.totalV1}</td><td>${p.totalV2}</td><td class="total-col">${p.totalGeneral}</td></tr>`;
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    cargarDatosSupabase();
+});
+</script>
+
+</body>
+</html>
