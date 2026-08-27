@@ -350,7 +350,6 @@ function switchTab(tabId) {
 
 function cargarClasificacionLaLiga() {
     const tbody = document.getElementById("ligaTableBody");
-    // Clasificación real actualizada y ordenada por puntos (conforme a los resultados oficiales actuales)
     const ligaData = [
         { name: "Real Madrid", pts: 6 },
         { name: "Sevilla FC", pts: 6 },
@@ -412,7 +411,9 @@ function calculateMatchPoints(predLoc, predVis, realLoc, realVis, sevIsLocal) {
 function renderStandingsPreds() {
     const tbody = document.getElementById("standingsPredsBody");
     tbody.innerHTML = "";
-    participants.forEach((p, idx) => {
+    let sortedParticipants = [...participants].sort((a, b) => a.name.localeCompare(b.name));
+    sortedParticipants.forEach((p) => {
+        let idx = participants.findIndex(item => item.name === p.name);
         let tr = document.createElement("tr");
         tr.innerHTML = `
             <td class="name-col">${p.name}</td>
@@ -450,7 +451,10 @@ function renderPreds() {
     const tbody = document.getElementById("predsBody");
     tbody.innerHTML = "";
 
-    participants.forEach((p, idx) => {
+    let sortedParticipants = [...participants].sort((a, b) => a.name.localeCompare(b.name));
+
+    sortedParticipants.forEach((p) => {
+        let idx = participants.findIndex(item => item.name === p.name);
         let tr = document.createElement("tr");
         let tdName = document.createElement("td");
         tdName.className = "name-col";
@@ -549,12 +553,19 @@ async function saveToSupabase() {
 function getEvaluatedData() {
     return participants.map(p => {
         let ptsV1 = 0, ptsV2 = 0;
+        let exactV1 = 0, exactV2 = 0;
+
         matches.forEach(m => {
             let userPred = p.preds[m.id];
             if (userPred) {
                 let matchPts = calculateMatchPoints(userPred[0], userPred[1], m.loc, m.vis, m.sevIsLocal);
-                if (m.half === 1) ptsV1 += matchPts;
-                else ptsV2 += matchPts;
+                if (m.half === 1) {
+                    ptsV1 += matchPts;
+                    if (matchPts === 6) exactV1++;
+                } else {
+                    ptsV2 += matchPts;
+                    if (matchPts === 6) exactV2++;
+                }
             }
         });
 
@@ -564,18 +575,44 @@ function getEvaluatedData() {
         let totalV1 = ptsV1 + posV1Pts;
         let totalV2 = ptsV2 + posV2Pts;
         let totalGeneral = totalV1 + totalV2;
+        let totalExact = exactV1 + exactV2;
 
-        return { name: p.name, v1: p.v1, v2: p.v2, ptsV1, posV1Pts, totalV1, ptsV2, posV2Pts, totalV2, totalGeneral };
+        return { 
+            name: p.name, 
+            v1: p.v1, 
+            v2: p.v2, 
+            ptsV1, 
+            posV1Pts, 
+            totalV1, 
+            exactV1,
+            ptsV2, 
+            posV2Pts, 
+            totalV2, 
+            exactV2,
+            totalGeneral,
+            totalExact
+        };
     });
 }
 
 function renderAllStandings() {
+    if (participants.length === 0) return;
     let data = getEvaluatedData();
     let matchesV1Finished = matches.slice(0, 19).every(m => m.loc !== "" && m.vis !== "") && realStandings.v1 !== "";
     let matchesV2Finished = matches.slice(19, 38).every(m => m.loc !== "" && m.vis !== "") && realStandings.v2 !== "";
     let totalFinished = matchesV1Finished && matchesV2Finished;
 
-    let sortedV1 = [...data].sort((a, b) => b.totalV1 - a.totalV1);
+    const sortRule = (a, b, scoreKey, exactKey) => {
+        if (b[scoreKey] !== a[scoreKey]) {
+            return b[scoreKey] - a[scoreKey];
+        }
+        if (b[exactKey] !== a[exactKey]) {
+            return b[exactKey] - a[exactKey];
+        }
+        return a.name.localeCompare(b.name);
+    };
+
+    let sortedV1 = [...data].sort((a, b) => sortRule(a, b, 'totalV1', 'exactV1'));
     const tbodyV1 = document.getElementById("clasifV1Body");
     tbodyV1.innerHTML = "";
     sortedV1.forEach((p, idx) => {
@@ -583,7 +620,7 @@ function renderAllStandings() {
         tbodyV1.innerHTML += `<tr><td><strong>${idx+1}º</strong></td><td style="text-align:left; font-weight:bold;">${p.name} ${badge}</td><td>${p.ptsV1}</td><td>${p.v1 !== "" ? p.v1 + "º" : "-"}</td><td>${p.posV1Pts}</td><td class="total-col">${p.totalV1}</td></tr>`;
     });
 
-    let sortedV2 = [...data].sort((a, b) => b.totalV2 - a.totalV2);
+    let sortedV2 = [...data].sort((a, b) => sortRule(a, b, 'totalV2', 'exactV2'));
     const tbodyV2 = document.getElementById("clasifV2Body");
     tbodyV2.innerHTML = "";
     sortedV2.forEach((p, idx) => {
@@ -591,7 +628,7 @@ function renderAllStandings() {
         tbodyV2.innerHTML += `<tr><td><strong>${idx+1}º</strong></td><td style="text-align:left; font-weight:bold;">${p.name} ${badge}</td><td>${p.ptsV2}</td><td>${p.v2 !== "" ? p.v2 + "º" : "-"}</td><td>${p.posV2Pts}</td><td class="total-col">${p.totalV2}</td></tr>`;
     });
 
-    let sortedTotal = [...data].sort((a, b) => b.totalGeneral - a.totalGeneral);
+    let sortedTotal = [...data].sort((a, b) => sortRule(a, b, 'totalGeneral', 'totalExact'));
     const tbodyTotal = document.getElementById("clasifTotalBody");
     tbodyTotal.innerHTML = "";
     sortedTotal.forEach((p, idx) => {
@@ -601,7 +638,7 @@ function renderAllStandings() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    cargarDatosSupabase();
+    cargarDatosSupabasePublic();
 });
 </script>
 
